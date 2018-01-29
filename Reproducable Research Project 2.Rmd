@@ -1,0 +1,131 @@
+---
+title: "Reproducible Research Project 2"
+author: "Antoin van Gemert"
+date: "27 januari 2018"
+output: html_document
+---
+# Reproducable Research Course Project 2
+## January 2018
+### This document presents the data processing, analysis and results of the US National Oceanic and Atmospheric Administration's storm database in terms of impact on property damage and human health.
+
+# Synopsis:
+## This project involves exploring the US National Oceanic and Atmospheric Administration's (NOAA) storm database. This database stores characteristics of major storms and wheather events in the US, including the data when and where they did occur. As estimates of fatalities, injuries and damage.
+
+# The outcome of this assignment must adress following questions:
+## 1. Across the US, which types of events (as indicated in the variable) are most harmful with respect to population health?
+## 2. Across the US, which types of events have greatest economic consequences?
+
+# Results:
+# The analysis will show by aggregating the data by event type that:
+## 1. The event tornado is the most harmfull event on population health(fatalities and injuries)
+## 2. The event flood is responsible for the highest economical damage
+
+# Data Processing
+```{r}
+#Following packages need te be loaded:
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+# Please download the data file in the work directory. The URL for the file is: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+
+# Loading the data into the workspace
+data <- read.csv("repdata_data_StormData.csv")
+```
+# fast analysis of the data
+```{r}
+dim(data)
+```
+```{r}
+head(data)
+```
+```{r}
+head(unique(data$EVTYPE))
+```
+# selecting the usefull columns for the analysis
+```{r}
+cdata <- select(data, BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
+```
+# from January 1966 on all EVTYPES are registered, therefore only events from January 1966 on are used in this analysis.
+# removing all events before January 1966
+```{r}
+cdata$BGN_DATE <- as.Date(cdata$BGN_DATE, format = "%m/%d/%Y")  
+cdata <- subset(cdata, BGN_DATE >= as.Date("1966-01-01"))
+str(cdata)
+```
+# converting exp into numerics so damage on property and crop can be calculated
+# check the values used in PROPDMGEXP and CROPDMGEXP
+```{r}
+unique(cdata$PROPDMGEXP)
+unique(cdata$CROPDMGEXP)
+```
+```{r}
+# Property
+cdata$PDAM <- 0
+cdata[cdata$PROPDMGEXP == "h", ]$PDAM <- cdata[cdata$PROPDMGEXP == "h", ]$PROPDMG * 10^2
+cdata[cdata$PROPDMGEXP == "H", ]$PDAM <- cdata[cdata$PROPDMGEXP == "H", ]$PROPDMG * 10^2
+cdata[cdata$PROPDMGEXP == "K", ]$PDAM <- cdata[cdata$PROPDMGEXP == "K", ]$PROPDMG * 10^3
+cdata[cdata$PROPDMGEXP == "m", ]$PDAM <- cdata[cdata$PROPDMGEXP == "m", ]$PROPDMG * 10^6
+cdata[cdata$PROPDMGEXP == "M", ]$PDAM <- cdata[cdata$PROPDMGEXP == "M", ]$PROPDMG * 10^6
+cdata[cdata$PROPDMGEXP == "B", ]$PDAM <- cdata[cdata$PROPDMGEXP == "B", ]$PROPDMG * 10^9
+cdata[cdata$PROPDMGEXP == "-", ]$PDAM <- cdata[cdata$PROPDMGEXP == "-", ]$PROPDMG * 10^0
+cdata[cdata$PROPDMGEXP == "+", ]$PDAM <- cdata[cdata$PROPDMGEXP == "+", ]$PROPDMG * 10^0
+cdata[cdata$PROPDMGEXP == "?", ]$PDAM <- cdata[cdata$PROPDMGEXP == "?", ]$PROPDMG * 10^0
+cdata[cdata$PROPDMGEXP == "0", ]$PDAM <- cdata[cdata$PROPDMGEXP == "0", ]$PROPDMG * 10^0
+cdata[cdata$PROPDMGEXP == "1", ]$PDAM <- cdata[cdata$PROPDMGEXP == "1", ]$PROPDMG * 10^1
+cdata[cdata$PROPDMGEXP == "2", ]$PDAM <- cdata[cdata$PROPDMGEXP == "2", ]$PROPDMG * 10^2
+cdata[cdata$PROPDMGEXP == "3", ]$PDAM <- cdata[cdata$PROPDMGEXP == "3", ]$PROPDMG * 10^3
+cdata[cdata$PROPDMGEXP == "4", ]$PDAM <- cdata[cdata$PROPDMGEXP == "4", ]$PROPDMG * 10^4
+cdata[cdata$PROPDMGEXP == "5", ]$PDAM <- cdata[cdata$PROPDMGEXP == "5", ]$PROPDMG * 10^5
+cdata[cdata$PROPDMGEXP == "6", ]$PDAM <- cdata[cdata$PROPDMGEXP == "6", ]$PROPDMG * 10^6
+cdata[cdata$PROPDMGEXP == "7", ]$PDAM <- cdata[cdata$PROPDMGEXP == "7", ]$PROPDMG * 10^7
+cdata[cdata$PROPDMGEXP == "8", ]$PDAM <- cdata[cdata$PROPDMGEXP == "8", ]$PROPDMG * 10^8
+
+# Crop
+cdata$CDAM <- 0
+cdata[cdata$CROPDMGEXP == "k", ]$CDAM <- cdata[cdata$CROPDMGEXP == "k", ]$CROPDMG * 10^3
+cdata[cdata$CROPDMGEXP == "K", ]$CDAM <- cdata[cdata$CROPDMGEXP == "K", ]$CROPDMG * 10^3
+cdata[cdata$CROPDMGEXP == "m", ]$CDAM <- cdata[cdata$CROPDMGEXP == "m", ]$CROPDMG * 10^6
+cdata[cdata$CROPDMGEXP == "M", ]$CDAM <- cdata[cdata$CROPDMGEXP == "M", ]$CROPDMG * 10^6
+cdata[cdata$CROPDMGEXP == "B", ]$CDAM <- cdata[cdata$CROPDMGEXP == "B", ]$CROPDMG * 10^9
+cdata[cdata$CROPDMGEXP == "?", ]$CDAM <- cdata[cdata$CROPDMGEXP == "?", ]$CROPDMG * 10^0
+cdata[cdata$CROPDMGEXP == "0", ]$CDAM <- cdata[cdata$CROPDMGEXP == "0", ]$CROPDMG * 10^0
+cdata[cdata$CROPDMGEXP == "2", ]$CDAM <- cdata[cdata$CROPDMGEXP == "2", ]$CROPDMG * 10^2
+```
+# Analysis and results
+## First question: Across the US, which types of events (as indicated in the variable) are most harmful with respect to population health?
+### Top 5 events for fatality
+```{r}
+fatality <- aggregate(list(Freq = cdata$FATALITIES), list(EVTYPE = cdata$EVTYPE), sum)
+fatality <- head(fatality[order(-fatality$Freq),], n=5)
+fatality
+```
+### In a bar plot
+```{r}
+ggplot(data = fatality, aes(x = reorder(EVTYPE, Freq), y = Freq)) + geom_bar(stat = "identity", alpha = 0.5, fill = "red") + ggtitle(label = "Top 5 Events for Fatality") + labs(x = "Event Type", y = "Count") + coord_flip()
+```
+### Top 5 events for injury
+```{r}
+injury <- aggregate(list(Freq = cdata$INJURIES), list(EVTYPE = cdata$EVTYPE), sum)
+injury <- head(injury[order(-injury$Freq),], n=5)
+injury
+```
+### In a bar plot
+```{r}
+ggplot(data = injury, aes(x = reorder(EVTYPE, Freq), y = Freq)) + geom_bar(stat = "identity", alpha = 0.5, fill = "red") + ggtitle(label = "Top 5 Events for Injury") + labs(x = "Event Type", y = "Count") + coord_flip()
+```
+## Second question: Across the US, which types of events have greatest economic consequences?
+### Top 5 events for economical damage
+```{r}
+dam <- aggregate(PDAM + CDAM ~ EVTYPE, data = cdata, sum)
+names(dam) <- c("EVTYPE", "TOTDAM")
+
+ecdam <- aggregate(list(Freq = dam$TOTDAM), list(EVTYPE = dam$EVTYPE), sum)
+ecdam <- head(ecdam[order(-ecdam$Freq),], n=5)
+ecdam
+```
+
+### In a bar plot
+```{r}
+ggplot(data = ecdam, aes(x = reorder(EVTYPE, Freq), y = Freq)) + geom_bar(stat = "identity", alpha = 0.5, fill = "red") + ggtitle(label = "Top 5 Events for Economical Damage") + labs(x = "Event Type", y = "Damage in US$") + coord_flip()
+```
