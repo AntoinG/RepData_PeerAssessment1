@@ -5,6 +5,7 @@ date: "8 januari 2018"
 output: html_document
 ---
 #1. Loading and preprocessing the data
+## First download the dataset  from the course website: "Activity monitoring data.csv"
 ## 1.1 the data is loaded into variable 'act', and checks have been performed using the functions 'summary' and 'head'
 ## 1.2 in this stage no further processing of the data is necessary
 ```{r}
