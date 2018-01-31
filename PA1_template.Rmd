@@ -10,51 +10,52 @@ output: html_document
 ## 1.2 in this stage no further processing of the data is necessary
 ```{r}
 act <- read.csv("activity.csv")
-str(act)
+summary(act)
 head(act)
 ```
 #2. What is the mean total number of steps taken per day?
 ### For this part of the assignment, you can ignore the missing values in the dataset.
-## 2.1 Calculate the total number of steps taken per day. The result is sored in variable 'spd'.
+## 2.1 Calculate the total number of steps taken per day. The result is stored in variable 'spd'.
 ```{r}
 spd <- aggregate(steps ~ date, act, sum, na.rm = TRUE)
 head(spd)
 ```
-## 2.2 Make a histogram of the total number of steps taken each day.
+## 2.2 Make a histogram of the total number of steps taken each day. The histogram is caputerd in:"Histogram total number of steps taken each day.png"
 ```{r}
 hist(spd$steps, col = "red", xlab = "Steps", main = "Steps per Day")
 ```
 ## 2.3 Calculate and report the mean and median of the total number of steps taken per day.
-### The mean total number of steps is stored in variable 'meanspd'
+### The mean total number of steps is stored in variable 'meanspd', the mean number of steps at this moment is 10766.19
 ```{r}
 meanspd <- mean(spd$steps)
 head(meanspd)
 ```
-### The median total number of steps is stored in variable 'medspd'
+### The median total number of steps is stored in variable 'medspd', the median number of steps at this moment is 10765
 ```{r}
 medspd <- median(spd$steps)
 medspd
 ```
 #3. What is the average daily activity pattern?
-## 3.1 Make a time series plot (i.e) of the 5-minute interval (x - axis) and the average number of steps taken, averaged across all days (y - axis).
+## 3.1 Make a time series plot (i.e) of the 5-minute interval (x - axis) and the average number of steps taken, averaged across all days (y - axis). The plot is captured in:"Plot average number of steps.png"
 ```{r}
 spi <- aggregate(steps ~ interval, data = act, mean, na.rm = TRUE)
 plot(steps ~ interval, data = spi, type = "l", xlab = "5-minute interval", ylab = "Average number of steps", main = "Average Daily Activity Pattern")
 ```
 ## 3.2 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-### The 5-minute interval with the max number of steps is sored in variable 'maxsteps". 
+### The 5-minute interval with the max number of steps is sored in variable "maxsteps", the maximum number of steps at this moment is 835 
 ```{r}
 maxsteps <- spi[which.max(spi$steps), ]$interval
 maxsteps
 ```
 #4. Imputing missing values
 ## 4.1 Calculate and report the total number of missing values in the dataset(i.e. the total number of rows with s)
-### The variable 'misval'contains the number of missing values.
+### The variable 'misval'contains the number of missing values, the number of NA's at this moment is 2304.
 ```{r}
 misval <- sum(is.na(act$steps))
 misval
 ```
 ## 4.2 Devise a strategy for filling in all the missing values in the dataset. The strategy does not need to be sophistacated.
+### For this assignment the strategy for filling missing values is using the means of the intervals.
 ```{r}
 mspi <- function(interval){
   spi[spi$interval == interval, ]$steps
@@ -70,28 +71,28 @@ for (i in 1:nrow(actnona)) {
   }
 }
 ```
-### Checking if all NA's are filled
+### Checking if all NA's are filled, we can now verify there are 0 NA's in the new dataset
 ```{r}
 misval <- sum(is.na(actnona$steps))
 misval
 ```
 ## 4.4 Make a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day.
-### histogram
+### The histogram is captured in:"Total number of steps taken each day.png"
 ```{r}
 spdnona <- aggregate(steps ~ date, data = actnona, sum) 
 hist(spdnona$steps, col = "red", xlab = "Steps", main = "Steps per Day Complete")
 ```
-### new mean
+### The new mean is stored in "meanspdnona", the new mean is 10766.19 at this moment.
 ```{r}
 meanspdnona <- mean(spdnona$steps)
 meanspdnona
 ```
-### new median
+### The new median is stored in "medspdnona", the new median is 10766.19 at this moment.
 ```{r}
 medspdnona <- median(spdnona$steps)
 medspdnona
 ```
-### now the new mean equals the new median 
+### In the new dataset the new mean is equal to the new median 
 ```{r}
 meanspdnona == medspdnona
 ```
@@ -114,7 +115,7 @@ nwi <- aggregate(steps ~ interval + daytype, actnona, mean)
 names(nwi)[3] <- "mean_steps"
 head(nwi, 5)
 ```
-## 5.2 Make a panel plot containing a time series plot (i.e.) of the 5-minutes interval (x-axis) and the average nimber of steps taken, averaged across all weekday days or weekend days (y-axis).
+## 5.2 Make a panel plot containing a time series plot (i.e.) of the 5-minutes interval (x-axis) and the average nimber of steps taken, averaged across all weekday days or weekend days (y-axis). The time series plot is captured in:"Time series plot average number of steps weekdays vs. weekends.png" 
 ```{r}
 library(lattice)
 xyplot(mean_steps ~ interval | daytype, nwi, type = "l", layout = c(1,2), main = "Time Series Plot", xlab = "Interval", ylab = "Average Steps Taken")
